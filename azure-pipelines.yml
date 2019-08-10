@@ -1,0 +1,25 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- script: dotnet restore
+  workingDirectory: './src/CirateSolutions.ReflectionExtensions'
+  displayName: 'Restoring nuget packages'
+
+- script: dotnet build --configuration $(buildConfiguration)
+  workingDirectory: './src/CirateSolutions.ReflectionExtensions'
+  displayName: 'Building project in $(buildConfiguration) configuration'
+
+- task: DotNetCoreCLI@2
+  displayName: 'Running unit tests'
+  inputs:
+    command: test
+    workingDirectory: './src/CirateSolutions.ReflectionExtensions'
+    projects: '**/*UnitTests/*Tests.csproj'
+    arguments: '--configuration $(buildConfiguration)'
