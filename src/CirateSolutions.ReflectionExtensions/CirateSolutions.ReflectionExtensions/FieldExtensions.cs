@@ -1,26 +1,34 @@
 ﻿using System;
 using System.Reflection;
+using CirateSolutions.ReflectionExtensions.Exceptions;
 
 namespace CirateSolutions.ReflectionExtensions
 {
-    public static class FieldExtensions
-    {
-	    public static TValue GetFieldValue<TValue>(this object target, string name)
-	    {
-		    target = target ?? throw new ArgumentNullException(nameof(target));
+	public static class FieldExtensions
+	{
+		private const BindingFlags InstanceFields = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
 
-		    var fieldInfo = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+		public static TValue GetFieldValue<TValue>(this object target, string fieldName)
+		{
+			if (target is null)
+			{
+				throw new ArgumentNullException(nameof(target));
+			}
 
-		    if (fieldInfo is null)
-		    {
-			    throw new Exception();
-            }
-		    if (fieldInfo.FieldType != typeof(TValue))
-		    {
-			    throw new Exception();
-		    }
+			var fieldInfo = target.GetType()
+			                      .GetField(fieldName, InstanceFields);
 
-		    return (TValue)fieldInfo.GetValue(target);
-        }
-    }
+			if (fieldInfo is null)
+			{
+				throw new FieldNotFoundException(fieldName, target.GetType());
+			}
+
+			if (fieldInfo.FieldType != typeof(TValue))
+			{
+				throw new FieldTypeMismatchException(fieldName, target.GetType(), typeof(TValue));
+			}
+
+			return (TValue) fieldInfo.GetValue(target);
+		}
+	}
 }
