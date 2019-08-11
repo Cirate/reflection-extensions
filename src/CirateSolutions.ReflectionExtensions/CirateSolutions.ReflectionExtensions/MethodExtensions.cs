@@ -1,39 +1,30 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
-using CirateSolutions.ReflectionExtensions.Exceptions;
+using CirateSolutions.ReflectionExtensions.Validators;
 
 namespace CirateSolutions.ReflectionExtensions
 {
 	public static class MethodExtensions
 	{
 		private const BindingFlags InstanceMethods = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+		private const BindingFlags StaticMethods = BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public;
 
 		public static void Invoke(this object target, string methodName)
-		{
-			if (target is null)
-			{
-				throw new ArgumentNullException(nameof(target));
-			}
+			=> target.NotNull(nameof(target))
+			         .GetType()
+			         .GetMethod(methodName, InstanceMethods)
+			         .Validate(target.GetType(), methodName)
+			         .Invoke(target, null);
 
-			var methodInfo = target.GetType().GetMethod(methodName, InstanceMethods);
+		public static void InvokeStaticMethod(this object target, string methodName)
+			=> target.NotNull(nameof(target))
+			         .GetType()
+			         .InvokeStaticMethod(methodName);
 
-			if (methodInfo is null)
-			{
-				throw new MethodNotFoundException(methodName, target.GetType());
-			}
-
-			if (methodInfo.ReturnType != typeof(void))
-			{
-				throw new MethodReturnTypeMismatchException(methodName, target.GetType(), typeof(void));
-			}
-
-			if (methodInfo.GetParameters().Any())
-			{
-				throw new MethodParametersMismatchException(methodName, target.GetType());
-			}
-
-			methodInfo.Invoke(target, null);
-		}
+		public static void InvokeStaticMethod(this Type type, string methodName)
+			=> type.NotNull(nameof(type))
+			       .GetMethod(methodName, StaticMethods)
+			       .Validate(type, methodName)
+			       .Invoke(null, null);
 	}
 }
