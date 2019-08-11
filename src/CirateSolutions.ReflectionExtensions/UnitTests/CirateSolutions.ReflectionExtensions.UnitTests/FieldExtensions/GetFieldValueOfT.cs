@@ -4,7 +4,7 @@ using CirateSolutions.ReflectionExtensions.Exceptions;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace CirateSolutions.ReflectionExtensions.UnitTests.FieldExtensionsTests
+namespace CirateSolutions.ReflectionExtensions.UnitTests.FieldExtensions
 {
 	public class GetFieldValueOfT
 	{
